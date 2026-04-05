@@ -1,0 +1,268 @@
+local Players = game:GetService("Players")
+local RS = game:GetService("ReplicatedStorage")
+local WS = game:GetService("Workspace")
+local SP = game:GetService("StarterPlayer")
+local SSS = game:GetService("ServerScriptService")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local function missing(t, f, fallback)
+	if type(f) == t then return f end
+	return fallback
+end
+
+local _decompile = missing("function", decompile)
+local _getscriptbytecode = missing("function", getscriptbytecode)
+local _request = missing("function", request or http_request or (syn and syn.request) or (http and http.request) or (fluxus and fluxus.request))
+
+if not _decompile and _getscriptbytecode and _request then
+	pcall(function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/refs/heads/main/konstant.lua"))()
+		_decompile = missing("function", decompile)
+	end)
+end
+
+local function getSource(scr)
+	if _decompile then
+		local ok, src = pcall(_decompile, scr)
+		if ok and src and src ~= "" then
+			return src:gsub("\0", "\\0")
+		end
+	end
+	if _getscriptbytecode then
+		local ok, bytecode = pcall(_getscriptbytecode, scr)
+		if ok and bytecode and bytecode ~= "" then
+			return "-- [DECOMPILE FAILED - BYTECODE ONLY]"
+		end
+	end
+	return "-- [SOURCE PROTECTED]"
+end
+
+local p = Players.LocalPlayer
+local pGui = p:WaitForChild("PlayerGui")
+local noclipActive = false
+local speed = 50
+
+local sg = Instance.new("ScreenGui")
+sg.Name = "DamnLogger"
+sg.ResetOnSpawn = false
+sg.Parent = pGui
+
+local mf = Instance.new("Frame")
+mf.Size = UDim2.new(0, 450, 0, 300)
+mf.Position = UDim2.new(0.5, -225, 0.5, -150)
+mf.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+mf.BorderColor3 = Color3.fromRGB(0, 255, 0)
+mf.BorderSizePixel = 2
+mf.Parent = sg
+
+local tb = Instance.new("Frame")
+tb.Size = UDim2.new(1, 0, 0, 25)
+tb.BackgroundColor3 = Color3.fromRGB(0, 50, 0)
+tb.Parent = mf
+
+local tl = Instance.new("TextLabel")
+tl.Size = UDim2.new(1, -40, 1, 0)
+tl.Position = UDim2.new(0, 10, 0, 0)
+tl.BackgroundTransparency = 1
+tl.Text = "DAMNLOGGER"
+tl.TextColor3 = Color3.fromRGB(0, 255, 0)
+tl.Font = Enum.Font.Code
+tl.TextXAlignment = Enum.TextXAlignment.Left
+tl.Parent = tb
+
+local cb = Instance.new("TextButton")
+cb.Size = UDim2.new(0, 25, 1, 0)
+cb.Position = UDim2.new(1, -25, 0, 0)
+cb.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+cb.Text = "X"
+cb.TextColor3 = Color3.fromRGB(255, 255, 255)
+cb.Parent = tb
+
+local ob = Instance.new("ImageButton")
+ob.Size = UDim2.new(0, 50, 0, 50)
+ob.Position = UDim2.new(1, -70, 1, -70)
+ob.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+ob.Image = "rbxassetid://104667667927699"
+ob.Visible = false
+ob.Parent = sg
+
+local oc = Instance.new("UICorner")
+oc.CornerRadius = UDim.new(0, 8)
+oc.Parent = ob
+
+local os = Instance.new("UIStroke")
+os.Thickness = 2
+os.Color = Color3.fromRGB(0, 255, 0)
+os.Parent = ob
+
+local sc = Instance.new("ScrollingFrame")
+sc.Size = UDim2.new(1, -20, 1, -95)
+sc.Position = UDim2.new(0, 10, 0, 35)
+sc.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+sc.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 0)
+sc.AutomaticCanvasSize = Enum.AutomaticSize.Y
+sc.Parent = mf
+
+local ll = Instance.new("UIListLayout")
+ll.SortOrder = Enum.SortOrder.LayoutOrder
+ll.Parent = sc
+
+local ib = Instance.new("TextBox")
+ib.Size = UDim2.new(1, -100, 0, 35)
+ib.Position = UDim2.new(0, 10, 1, -45)
+ib.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+ib.TextColor3 = Color3.fromRGB(255, 255, 255)
+ib.Font = Enum.Font.Code
+ib.PlaceholderText = "> Type 'noclip' or command..."
+ib.Parent = mf
+
+local lb = Instance.new("TextButton")
+lb.Size = UDim2.new(0, 70, 0, 35)
+lb.Position = UDim2.new(1, -80, 1, -45)
+lb.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+lb.Text = "SCAN"
+lb.TextColor3 = Color3.fromRGB(0, 255, 0)
+lb.Parent = mf
+
+local vf = Instance.new("Frame")
+vf.Size = UDim2.new(0, 350, 0, 400)
+vf.Position = UDim2.new(0.5, 240, 0.5, -200)
+vf.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+vf.Visible = false
+vf.Parent = sg
+
+local vt = Instance.new("Frame")
+vt.Size = UDim2.new(1, 0, 0, 25)
+vt.BackgroundColor3 = Color3.fromRGB(0, 40, 0)
+vt.Parent = vf
+
+local vTitle = Instance.new("TextLabel")
+vTitle.Size = UDim2.new(1, -30, 1, 0)
+vTitle.BackgroundTransparency = 1
+vTitle.Text = "SOURCEVIEWER"
+vTitle.TextColor3 = Color3.fromRGB(0, 255, 0)
+vTitle.Font = Enum.Font.Code
+vTitle.Parent = vt
+
+local vc = Instance.new("TextButton")
+vc.Size = UDim2.new(0, 25, 1, 0)
+vc.Position = UDim2.new(1, -25, 0, 0)
+vc.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+vc.Text = "X"
+vc.Parent = vt
+
+local vs = Instance.new("ScrollingFrame")
+vs.Size = UDim2.new(1, -10, 1, -35)
+vs.Position = UDim2.new(0, 5, 0, 30)
+vs.BackgroundTransparency = 1
+vs.AutomaticCanvasSize = Enum.AutomaticSize.XY
+vs.Parent = vf
+
+local st = Instance.new("TextLabel")
+st.Size = UDim2.new(1, 0, 0, 0)
+st.AutomaticSize = Enum.AutomaticSize.XY
+st.BackgroundTransparency = 1
+st.TextColor3 = Color3.fromRGB(0, 255, 0)
+st.Font = Enum.Font.Code
+st.TextXAlignment = Enum.TextXAlignment.Left
+st.TextYAlignment = Enum.TextYAlignment.Top
+st.Parent = vs
+
+local function openSource(obj)
+	vTitle.Text = obj.Name
+	st.Text = getSource(obj)
+	vf.Visible = true
+end
+
+local function w(txt, col, obj)
+	local l = Instance.new("TextButton")
+	l.Size = UDim2.new(1, 0, 0, 18)
+	l.BackgroundTransparency = 1
+	l.Text = "> " .. txt
+	l.TextColor3 = col or Color3.fromRGB(0, 255, 0)
+	l.Font = Enum.Font.Code
+	l.TextXAlignment = Enum.TextXAlignment.Left
+	l.Parent = sc
+
+	if obj and (obj:IsA("LuaSourceContainer")) then
+		local lc = 0
+		l.MouseButton1Click:Connect(function()
+			if tick() - lc < 0.5 then openSource(obj) end
+			lc = tick()
+		end)
+	end
+	sc.CanvasPosition = Vector2.new(0, 99999)
+end
+
+local function toggleNoclip()
+	noclipActive = not noclipActive
+	w("NOCLIP: " .. (noclipActive and "ENABLED" or "DISABLED"), noclipActive and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0))
+	local char = p.Character
+	if not char then return end
+
+	RunService.Stepped:Connect(function()
+		if noclipActive and char then
+			for _, part in pairs(char:GetDescendants()) do
+				if part:IsA("BasePart") then part.CanCollide = false end
+			end
+		end
+	end)
+end
+
+RunService.RenderStepped:Connect(function(dt)
+	if noclipActive and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+		local hrp = p.Character.HumanoidRootPart
+		local cam = WS.CurrentCamera.CFrame
+		local moveDir = Vector3.new(0,0,0)
+
+		if UIS:IsKeyDown(Enum.KeyCode.W) then moveDir += cam.LookVector end
+		if UIS:IsKeyDown(Enum.KeyCode.S) then moveDir -= cam.LookVector end
+		if UIS:IsKeyDown(Enum.KeyCode.A) then moveDir -= cam.RightVector end
+		if UIS:IsKeyDown(Enum.KeyCode.D) then moveDir += cam.RightVector end
+
+		hrp.Velocity = Vector3.new(0,0,0)
+		hrp.CFrame = hrp.CFrame + (moveDir * speed * dt)
+	end
+end)
+
+ib.FocusLost:Connect(function(e)
+	if e and ib.Text ~= "" then
+		local cmd = ib.Text:lower()
+		if cmd == "noclip" then toggleNoclip() else w("LOCAL: " .. ib.Text, Color3.fromRGB(255, 255, 0)) end
+		ib.Text = ""
+	end
+end)
+
+lb.MouseButton1Click:Connect(function()
+	w("--- SCAN ---", Color3.fromRGB(0, 255, 255))
+	local function scan(f, n)
+		for _, c in ipairs(f:GetChildren()) do w(n..": "..c.Name.." | LOC: "..c:GetFullName(), nil, c) end
+	end
+	scan(RS, "RS")
+	for _, d in ipairs(WS:GetDescendants()) do if d:IsA("RemoteEvent") then w("RE: "..d.Name.." | LOC: "..d:GetFullName(), Color3.fromRGB(255, 165, 0)) end end
+	scan(SP.StarterPlayerScripts, "SPS")
+	scan(SP.StarterCharacterScripts, "SCS")
+	pcall(function() scan(SSS, "SSS") end)
+	w("--- END ---", Color3.fromRGB(0, 255, 255))
+end)
+
+cb.MouseButton1Click:Connect(function() mf.Visible = false ob.Visible = true vf.Visible = false end)
+ob.MouseButton1Click:Connect(function() mf.Visible = true ob.Visible = false end)
+vc.MouseButton1Click:Connect(function() vf.Visible = false end)
+
+local function drag(f, h)
+	local d, i, m, pos
+	h.InputBegan:Connect(function(inpt)
+		if inpt.UserInputType == Enum.UserInputType.MouseButton1 then d = true m = inpt.Position pos = f.Position
+			inpt.Changed:Connect(function() if inpt.UserInputState == Enum.UserInputState.End then d = false end end)
+		end
+	end)
+	UIS.InputChanged:Connect(function(inpt)
+		if d and inpt.UserInputType == Enum.UserInputType.MouseMovement then
+			local delta = inpt.Position - m
+			f.Position = UDim2.new(pos.X.Scale, pos.X.Offset + delta.X, pos.Y.Scale, pos.Y.Offset + delta.Y)
+		end
+	end)
+end
+drag(mf, tb) drag(vf, vt)
